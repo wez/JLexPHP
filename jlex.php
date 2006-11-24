@@ -31,9 +31,6 @@ class JLexBase {
   protected $yy_count_chars = false;
   protected $yyfilename = null;
 
-  const YY_E_INTERNAL = 0;
-  const YY_E_MATCH = 1;
-
   function __construct($stream) {
     $this->yy_reader = $stream;
     $meta = stream_get_meta_data($stream);
@@ -54,13 +51,11 @@ class JLexBase {
   }
 
   protected function yybegin($state) {
-//    echo "yybegin:", $state, "\n";
     $this->yy_lexical_state = $state;
   }
 
   protected function yy_advance() {
     if ($this->yy_buffer_index < $this->yy_buffer_read) {
-    #  echo "yy_advance: idx=", $this->yy_buffer_index, " ", ord($this->yy_buffer[$this->yy_buffer_index]), " ", $this->yy_buffer[$this->yy_buffer_index], "\n";
       return ord($this->yy_buffer[$this->yy_buffer_index++]);
     }
     if ($this->yy_buffer_start != 0) {
@@ -84,7 +79,6 @@ class JLexBase {
       $this->yy_buffer .= $data;
       $this->yy_buffer_read .= strlen($data);
     }
-#    echo "yy_advance: idx=", $this->yy_buffer_index, " ", ord($this->yy_buffer[$this->yy_buffer_index]), " ", $this->yy_buffer[$this->yy_buffer_index], "\n";
     return ord($this->yy_buffer[$this->yy_buffer_index++]);
   }
 
@@ -132,8 +126,8 @@ class JLexBase {
     $this->yy_at_bol = ($this->yy_buffer_end > $this->yy_buffer_start) &&
                 ("\r" == $this->yy_buffer[$this->yy_buffer_end-1] ||
                  "\n" == $this->yy_buffer[$this->yy_buffer_end-1] ||
-                 2028/*LS*/ == $this->yy_buffer[$this->yy_buffer_end-1] ||
-                 2029/*PS*/ == $this->yy_buffer[$this->yy_buffer_end-1]);
+                 2028 /* unicode LS */ == $this->yy_buffer[$this->yy_buffer_end-1] ||
+                 2029 /* unicode PS */ == $this->yy_buffer[$this->yy_buffer_end-1]);
   }
 
   protected function yytext() {
@@ -146,50 +140,14 @@ class JLexBase {
   }
 
   static $yy_error_string = array(
-    "Error: internal error.\n",
-    "Error: Unmatched input.\n"
+    'INTERNAL' => "Error: internal error.\n",
+    'MATCH' => "Error: Unmatched input.\n"
   );
 
   protected function yy_error($code, $fatal) {
     print self::$yy_error_string[$code];
     flush();
     if ($fatal) throw new Exception("JLex fatal error " . self::$yy_error_string[$code]);
-  }
-
-  protected function /* int[][] */ unpackFromString($size1, $size2, $st) {
-    $colonIndex = -1;
-    $lengthString = 0;
-    $sequenceLength = 0;
-    $sequenceInteger = 0;
-    $commaIndex = 0;
-
-    $res = array();
-
-    for ($i = 0; $i < $size1; $i++) {
-      for ($j= 0; $j < $size2; $j++) {
-        if ($sequenceLength != 0) {
-          $res[$i][$j] = $sequenceInteger;
-          $sequenceLength--;
-          continue;
-        }
-        $commaIndex = strpos($st, ","); //st.indexOf(',');
-        $workString = ($commaIndex===false) ? $st :
-          substr($st, 0, $commaIndex);
-        $st = substr($st, $commaIndex+1);
-        $colonIndex = strpos($workString, ':');
-        if ($colonIndex === false) {
-          $res[$i][$j]=(int)$workString;
-          continue;
-        }
-        $lengthString = substr($workString, $colonIndex+1);
-        $sequenceLength = (int)lengthString;
-        $workString = substr($workString, 0, $colonIndex);
-        $sequenceInteger = (int)$workString;
-        $res[$i][$j] = $sequenceInteger;
-        $sequenceLength--;
-      }
-    }
-    return $res;
   }
 
   /* creates an annotated token */

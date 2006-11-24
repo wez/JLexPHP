@@ -1584,7 +1584,7 @@ private void emit_table_as_array_2d(int [][] ia) {
 	  emit_actions("\t\t\t\t\t\t");
 
 	  m_outstream.println("\t\t\t\t\t\tdefault:");
-	  m_outstream.println("\t\t\t\t\t\t$this->yy_error(self::YY_E_INTERNAL,false);");
+	  m_outstream.println("\t\t\t\t\t\t$this->yy_error('INTERNAL',false);");
 	  /*m_outstream.println("\t\t\t\t\t\treturn null;");*/
 	  m_outstream.println("\t\t\t\t\tcase -1:");
 	  m_outstream.println("\t\t\t\t\t}");
