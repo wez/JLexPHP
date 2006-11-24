@@ -22,6 +22,7 @@ class JLexBase {
   protected $yy_buffer_start;
   protected $yy_buffer_end;
   protected $yychar = 0;
+  protected $yycol = 0;
   protected $yyline = 0;
   protected $yy_at_bol;
   protected $yy_lexical_state;
@@ -72,13 +73,14 @@ class JLexBase {
       $this->yy_buffer_index = $j;
 
       $data = fread($this->yy_reader, 8192);
+      if ($data === false || !strlen($data)) return $this->YY_EOF;
       $this->yy_buffer .= $data;
       $this->yy_buffer_read .= strlen($data);
     }
 
     while ($this->yy_buffer_index >= $this->yy_buffer_read) {
       $data = fread($this->yy_reader, 8192);
-      if ($data === false) break;
+      if ($data === false || !strlen($data)) return $this->YY_EOF;
       $this->yy_buffer .= $data;
       $this->yy_buffer_read .= strlen($data);
     }
@@ -101,9 +103,11 @@ class JLexBase {
         for ($i = $this->yy_buffer_start; $i < $this->yy_buffer_index; ++$i) {
           if ("\n" == $this->yy_buffer[$i] && !$this->yy_last_was_cr) {
             ++$this->yyline;
+            $this->yycol = 0;
           }
           if ("\r" == $this->yy_buffer[$i]) {
             ++$yyline;
+            $this->yycol = 0;
             $this->yy_last_was_cr = true;
           } else {
             $this->yy_last_was_cr = false;
@@ -112,6 +116,7 @@ class JLexBase {
       }
       if ($this->yy_count_chars) {
         $this->yychar += $this->yy_buffer_index - $this->yy_buffer_start;
+        $this->yycol += $this->yy_buffer_index - $this->yy_buffer_start;
       }
       $this->yy_buffer_start = $this->yy_buffer_index;
     }
@@ -122,7 +127,7 @@ class JLexBase {
   }
 
   protected function yy_to_mark() {
-#    echo "yy_to_mark: setting buffer index to ", $this->yy_buffer_end, "\n";
+    #echo "yy_to_mark: setting buffer index to ", $this->yy_buffer_end, "\n";
     $this->yy_buffer_index = $this->yy_buffer_end;
     $this->yy_at_bol = ($this->yy_buffer_end > $this->yy_buffer_start) &&
                 ("\r" == $this->yy_buffer[$this->yy_buffer_end-1] ||
@@ -198,7 +203,7 @@ class JLexBase {
   /* annotates a token with a value and source positioning */
   function annotateToken(JLexToken $tok) {
     $tok->value = $this->yytext();
-    $tok->col = $this->yychar;
+    $tok->col = $this->yycol;
     $tok->line = $this->yyline;
     $tok->filename = $this->yyfilename;
   }

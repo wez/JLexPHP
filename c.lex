@@ -1,14 +1,8 @@
 <?php # vim:ft=php
 include 'jlex.php';
+include '../lemon/c.php';
 /* This is a lexer for the C language */
 
-class CParser {
-	const TK_AUTO = 0;
-	const TK_STAR = 1;
-	const TK_IDENTIFIER = 2;
-	const TK_PRAGMA = 3;
-	const TK_TYPEDEF = 4;
-}
 
 %%
 

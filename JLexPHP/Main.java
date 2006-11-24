@@ -656,7 +656,7 @@ class CEmit
 
 	  // internal
 	  m_outstream.println("\tconst YY_BOL = "+m_spec.BOL+";");
-	  m_outstream.println("\tconst YY_EOF = "+m_spec.EOF+";");
+	  m_outstream.println("\tvar $YY_EOF = "+m_spec.EOF+";");
 	  // external
 	  if (m_spec.m_integer_type || true == m_spec.m_yyeof)
 	    m_outstream.println("\tconst YYEOF = -1;");
@@ -1513,7 +1513,7 @@ private void emit_table_as_array_2d(int [][] ia) {
 	    }
 
 	  // handle bare EOF.
-	  m_outstream.println("\t\t\tif (self::YY_EOF == $yy_lookahead " 
+	  m_outstream.println("\t\t\tif ($this->YY_EOF == $yy_lookahead " 
 				 + "&& true == $yy_initial) {");
 	  if (null != m_spec.m_eof_code)
 	    {
