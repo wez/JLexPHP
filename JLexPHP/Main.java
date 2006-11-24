@@ -1248,27 +1248,28 @@ class CEmit
 	  }
 	m_outstream.println("\t);");
 
-	m_outstream.print("\tprivate $yy_cmap = null;\n");
-	m_outstream.print("\tprivate $yy_rmap = null;\n");
-	m_outstream.print("\tprivate $yy_nxt = null;\n");
+//	m_outstream.print("\tstatic $yy_cmap = null;\n");
+//	m_outstream.print("\tstatic $yy_rmap = null;\n");
+//	m_outstream.print("\tprivate $yy_nxt = null;\n");
 
-	m_outstream.print("\tprotected function yy_build_tables() {\n");
+//	m_outstream.print("\tprotected function yy_build_tables() {\n");
 
 	// CSA: modified yy_cmap to use string packing 9-Aug-1999
 	int[] yy_cmap = new int[m_spec.m_ccls_map.length];
 	for (i = 0; i < m_spec.m_ccls_map.length; ++i)
 	    yy_cmap[i] = m_spec.m_col_map[m_spec.m_ccls_map[i]];
-	m_outstream.print("\t\t$yy_cmap = $this->unpackFromString(");
-	emit_table_as_string(new int[][] { yy_cmap });
-	m_outstream.println(");");
-	m_outstream.print("\t\t$this->yy_cmap = $yy_cmap[0];");
+	m_outstream.print("\t\tstatic $yy_cmap = ");
+//	emit_table_as_string(new int[][] { yy_cmap });
+	emit_table_as_array(yy_cmap);
+//	m_outstream.println(");");
 	m_outstream.println();
 
 	// CSA: modified yy_rmap to use string packing 9-Aug-1999
-	m_outstream.print("\t\t$yy_rmap = $this->unpackFromString(");
-	emit_table_as_string(new int[][] { m_spec.m_row_map });
-	m_outstream.println(");");
-	m_outstream.print("\t\t$this->yy_rmap = $yy_rmap[0];");
+	m_outstream.print("\t\tstatic $yy_rmap = ");
+//	emit_table_as_string(new int[][] { m_spec.m_row_map });
+	emit_table_as_array(m_spec.m_row_map);
+//	m_outstream.println(");");
+//	m_outstream.print("\t\t$this->yy_rmap = $yy_rmap[0];");
 	m_outstream.println();
 
 	// 6/24/98 Raimondas Lencevicius
@@ -1282,12 +1283,37 @@ class CEmit
 	    yy_nxt[elem] = dtrans.m_dtrans;
 	}
 	m_outstream.print
-	  ("\t\t$this->yy_nxt = $this->unpackFromString(");
-	emit_table_as_string(yy_nxt);
-	m_outstream.println(");");
+	  ("\t\tstatic $yy_nxt = ");
+//	emit_table_as_string(yy_nxt);
+	emit_table_as_array_2d(yy_nxt);
+//	m_outstream.println(");");
 	m_outstream.println();
-	m_outstream.println("\t}");
+//	m_outstream.println("\t}");
       }
+
+private void emit_table_as_array(int [] ia) {
+	int i;
+	m_outstream.println("array(");
+	for (i = 0; i < ia.length; ++i) {
+		m_outstream.print(" " + ia[i] + ",");
+		if (i % 20 == 19) m_outstream.println();
+	}
+	m_outstream.println(");");
+}
+private void emit_table_as_array_2d(int [][] ia) {
+	int i, j;
+	m_outstream.println("array(");
+	for (j = 0; j < ia.length; ++j) {
+		m_outstream.println("array(");
+		for (i = 0; i < ia[j].length; ++i) {
+			m_outstream.print(" " + ia[j][i] + ",");
+			if (i % 20 == 19) m_outstream.println();
+		}
+		m_outstream.println();
+		m_outstream.println("),");
+	}
+	m_outstream.println(");");
+}
 
   /***************************************************************
     Function: emit_driver
@@ -1353,7 +1379,7 @@ class CEmit
 		// CSA: output in 75 character chunks.
 		if (outstr.length() > 75) {
 		  String s = outstr.toString();
-		  m_outstream.println("\""+s.substring(0,75)+"\" +");
+		  m_outstream.println("\""+s.substring(0,75)+"\" .");
 		  outstr = new StringBuffer(s.substring(75));
 		}
 	      }
@@ -1437,13 +1463,13 @@ class CEmit
 	  m_outstream.println("\t\t$yy_next_state = self::YY_NO_STATE;");
 	  /*m_outstream.println("\t\tint yy_prev_stave = YY_NO_STATE;");*/
 	  m_outstream.println("\t\t$yy_last_accept_state = self::YY_NO_STATE;");
-    	  m_outstream.println("\t\t$$yy_initial = true;");
+    	  m_outstream.println("\t\t$yy_initial = true;");
 //	  m_outstream.println("\t\t$yy_this_accept;");
 	  m_outstream.println();
 
 	  m_outstream.println("\t\t$this->yy_mark_start();");
 	  /*m_outstream.println("\t\tyy_this_accept = yy_accept(yy_state);");*/
-	  m_outstream.println("\t\t$yy_this_accept = self::$yy_acpt[$this->yy_state];");
+	  m_outstream.println("\t\t$yy_this_accept = self::$yy_acpt[$yy_state];");
 	  m_outstream.println("\t\tif (self::YY_NOT_ACCEPT != $yy_this_accept) {");
 	  m_outstream.println("\t\t\t$yy_last_accept_state = $yy_state;");
 	  m_outstream.println("\t\t\t$this->yy_mark_end();");
@@ -1459,11 +1485,11 @@ class CEmit
 	  m_outstream.println("\t\t\tif ($yy_initial && $this->yy_at_bol) "+
 			                 "$yy_lookahead = self::YY_BOL;");
 	  m_outstream.println("\t\t\telse $yy_lookahead = $this->yy_advance();");
-	  m_outstream.println("\t\t\t$this->yy_next_state = self::YY_F;");
+//	  m_outstream.println("\t\t\t$yy_next_state = self::YY_F;");
 	  /*m_outstream.println("\t\t\t\tyy_next_state = "
 				 + "yy_next(yy_state,yy_lookahead);");*/
 	  m_outstream.println("\t\t\t$yy_next_state = "
- 	   + "$this->yy_nxt[$this->yy_rmap[$this->yy_state]][$this->yy_cmap[$this->yy_lookahead]];");
+ 	   + "self::$yy_nxt[self::$yy_rmap[$yy_state]][self::$yy_cmap[$yy_lookahead]];");
 
 	  if (NOT_EDBG)
 	    {
@@ -1555,9 +1581,9 @@ class CEmit
 
 	  m_outstream.println("\t\t\t\t\tswitch ($yy_last_accept_state) {");
 
-	  emit_actions("\t\t\t\t\t");
+	  emit_actions("\t\t\t\t\t\t");
 
-	  m_outstream.println("\t\t\t\t\tdefault:");
+	  m_outstream.println("\t\t\t\t\t\tdefault:");
 	  m_outstream.println("\t\t\t\t\t\t$this->yy_error(self::YY_E_INTERNAL,false);");
 	  /*m_outstream.println("\t\t\t\t\t\treturn null;");*/
 	  m_outstream.println("\t\t\t\t\tcase -1:");

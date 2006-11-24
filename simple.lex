@@ -4,9 +4,11 @@ include 'jlex.php';
 %%
 
 %{
+//<YYINITIAL> L? \" (\\.|[^\\\"])* \"	{ $this->createToken(CParser::TK_STRING_LITERAL); }
 	/* blah */
 %}
 
+%function nextToken
 %line
 %char
 %state COMMENTS
@@ -49,5 +51,5 @@ WHITE_SPACE=([\ \n\r\t\f])+
 	  $this->yybegin(self::YYINITIAL);
 }
 <YYINITIAL> . {
-	  return new Symbol(sym.error, null);
+	  throw new Exception("bah!");
 }

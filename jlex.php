@@ -36,7 +36,11 @@ class JLexBase {
   function __construct($stream) {
     $this->yy_reader = $stream;
     $meta = stream_get_meta_data($stream);
-    $this->yyfilename = $meta['uri'];
+    if (!isset($meta['uri'])) {
+      $this->yyfilename = '<<input>>';
+    } else {
+      $this->yyfilename = $meta['uri'];
+    }
 
     $this->yy_buffer = "";
     $this->yy_buffer_read = 0;
@@ -46,17 +50,17 @@ class JLexBase {
     $this->yychar = 0;
     $this->yyline = 0;
     $this->yy_at_bol = true;
-
-    $this->yy_build_tables();
   }
 
   protected function yybegin($state) {
+//    echo "yybegin:", $state, "\n";
     $this->yy_lexical_state = $state;
   }
 
   protected function yy_advance() {
     if ($this->yy_buffer_index < $this->yy_buffer_read) {
-      return $this->yy_buffer[$this->yy_buffer_index++];
+    #  echo "yy_advance: idx=", $this->yy_buffer_index, " ", ord($this->yy_buffer[$this->yy_buffer_index]), " ", $this->yy_buffer[$this->yy_buffer_index], "\n";
+      return ord($this->yy_buffer[$this->yy_buffer_index++]);
     }
     if ($this->yy_buffer_start != 0) {
       /* shunt */
@@ -74,10 +78,12 @@ class JLexBase {
 
     while ($this->yy_buffer_index >= $this->yy_buffer_read) {
       $data = fread($this->yy_reader, 8192);
+      if ($data === false) break;
       $this->yy_buffer .= $data;
       $this->yy_buffer_read .= strlen($data);
     }
-    return $this->yy_buffer[$this->yy_buffer_index++];
+#    echo "yy_advance: idx=", $this->yy_buffer_index, " ", ord($this->yy_buffer[$this->yy_buffer_index]), " ", $this->yy_buffer[$this->yy_buffer_index], "\n";
+    return ord($this->yy_buffer[$this->yy_buffer_index++]);
   }
 
   protected function yy_move_end() {
@@ -116,6 +122,7 @@ class JLexBase {
   }
 
   protected function yy_to_mark() {
+#    echo "yy_to_mark: setting buffer index to ", $this->yy_buffer_end, "\n";
     $this->yy_buffer_index = $this->yy_buffer_end;
     $this->yy_at_bol = ($this->yy_buffer_end > $this->yy_buffer_start) &&
                 ("\r" == $this->yy_buffer[$this->yy_buffer_end-1] ||
