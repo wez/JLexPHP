@@ -1,0 +1,60 @@
+JLexPHP: a Lexical Analyzer Generator for PHP, based on JLex.
+For copyright and licensing information, see the COPYING file.
+
+This is an adaptation of some Java code that generates lexers from lex style
+input files.
+
+The porting effort was pretty trivial, with the hardest part being the buffer management.
+
+Usage is fairly typical of lexers; you'll want to create a lexer file like this:
+
+----8<------
+<?php
+include 'jlex.php';
+
+%%
+
+D = [0-9]
+
+%%
+
+D+ { echo "The number ", $this->yytext(), "\n"; }
+.  { echo "Something else ", $this->yytext(), "\n"; }
+
+----8<------
+
+Then run process this file:
+
+  java -cp JLexPHP.jar JLexPHP.Main your.lex
+
+(the supplied makefile will create the jar file for you, or you
+can build it with:
+
+  javac JLexPHP/Main.java
+  jar cvf JLexPHP.jar JLexPHP/*.class
+)
+
+JLexPHP will output your.lex.php.  It will contain a class that will recognize
+the input stream described in your .lex file.
+
+Usage of that class is along the lines of:
+
+$scanner = new Yylex(fopen("file", "r"));
+while ($scanner->yylex())
+	;
+
+A more complicated scanner will use the createToken() method to create a token
+object that can then be fed into a parser, such as a lemon based parser.  You
+can see an example of that in the c.lex source file.  It is designed to work in
+conjunction with it's corresponding c.y file in my lemon port for php.
+
+
+You can find more information on the lexer syntax in the JLex manual:
+http://www.cs.princeton.edu/~appel/modern/java/JLex/current/manual.html
+
+
+Enjoy!
+
+--Wez.
+wez@omniti.com
+
