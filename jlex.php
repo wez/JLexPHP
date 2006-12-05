@@ -40,6 +40,17 @@ class JLexToken {
 }
 
 class JLexBase {
+  const YY_F = -1;
+  const YY_NO_STATE = -1;
+  const YY_NOT_ACCEPT = 0;
+  const YY_START = 1;
+  const YY_END = 2;
+  const YY_NO_ANCHOR = 4;
+  const YYEOF = -1;
+
+  protected $YY_BOL;
+  protected $YY_EOF;
+
   protected $yy_reader;
   protected $yy_buffer;
   protected $yy_buffer_read;
@@ -71,7 +82,7 @@ class JLexBase {
     $this->yy_buffer_start = 0;
     $this->yy_buffer_end = 0;
     $this->yychar = 0;
-    $this->yyline = 0;
+    $this->yyline = 1;
     $this->yy_at_bol = true;
   }
 
@@ -81,6 +92,9 @@ class JLexBase {
 
   protected function yy_advance() {
     if ($this->yy_buffer_index < $this->yy_buffer_read) {
+      if (!isset($this->yy_buffer[$this->yy_buffer_index])) {
+        return $this->YY_EOF;
+      }
       return ord($this->yy_buffer[$this->yy_buffer_index++]);
     }
     if ($this->yy_buffer_start != 0) {

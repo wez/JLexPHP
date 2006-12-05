@@ -25,11 +25,18 @@ IS	=	(u|U|l|L)
 
 %%
 
-<YYINITIAL> "/*"			{ $this->yybegin(self::COMMENT); }
-<YYINITIAL> "//[^\r\n]*"    { /* C++ comment */ }
+<YYINITIAL> "/*"			{ 
+								$this->commentTok = $this->createToken(CParser::TK_COMMENT);
+								$this->yybegin(self::COMMENT);
+						    }
+<YYINITIAL> //[^\r\n]*      { return $this->createToken(CParser::TK_COMMENT); }
 
-<COMMENT>   "*/"            { $this->yybegin(self::YYINITIAL); }
-<COMMENT>   [.\n]           { }
+<COMMENT>   "*/"            { 
+								$this->commentTok->value .= $this->yytext();
+							    $this->yybegin(self::YYINITIAL); 
+							    return $this->commentTok;
+							}
+<COMMENT>   (.|[\r\n])      { $this->commentTok->value .= $this->yytext(); }
 
 <YYINITIAL> #[^\r\n]*       { return $this->createToken(CParser::TK_PRAGMA); }
 
