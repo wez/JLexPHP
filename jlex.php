@@ -151,8 +151,8 @@ class JLexBase {
         $this->yychar += $this->yy_buffer_index - $this->yy_buffer_start;
         $this->yycol += $this->yy_buffer_index - $this->yy_buffer_start;
       }
-      $this->yy_buffer_start = $this->yy_buffer_index;
     }
+    $this->yy_buffer_start = $this->yy_buffer_index;
   }
 
   protected function yy_mark_end() {
