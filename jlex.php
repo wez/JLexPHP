@@ -109,14 +109,14 @@ class JLexBase {
       $data = fread($this->yy_reader, 8192);
       if ($data === false || !strlen($data)) return $this->YY_EOF;
       $this->yy_buffer .= $data;
-      $this->yy_buffer_read .= strlen($data);
+      $this->yy_buffer_read += strlen($data);
     }
 
     while ($this->yy_buffer_index >= $this->yy_buffer_read) {
       $data = fread($this->yy_reader, 8192);
       if ($data === false || !strlen($data)) return $this->YY_EOF;
       $this->yy_buffer .= $data;
-      $this->yy_buffer_read .= strlen($data);
+      $this->yy_buffer_read += strlen($data);
     }
     return ord($this->yy_buffer[$this->yy_buffer_index++]);
   }
