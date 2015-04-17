@@ -649,6 +649,7 @@ class CEmit
 	  m_outstream.println("\tconst YY_F = -1;");
 	  m_outstream.println("\tconst YY_NO_STATE = -1;");
 
+	  m_outstream.println("\tconst CMAP_CHUNK_SIZE = 1024;");
 	  m_outstream.println("\tconst YY_NOT_ACCEPT = 0;");
 	  m_outstream.println("\tconst YY_START = 1;");
 	  m_outstream.println("\tconst YY_END = 2;");
@@ -1255,12 +1256,17 @@ class CEmit
 //	m_outstream.print("\tprotected function yy_build_tables() {\n");
 
 	// CSA: modified yy_cmap to use string packing 9-Aug-1999
-	int[] yy_cmap = new int[m_spec.m_ccls_map.length];
-	for (i = 0; i < m_spec.m_ccls_map.length; ++i)
-	    yy_cmap[i] = m_spec.m_col_map[m_spec.m_ccls_map[i]];
+	int[][] yy_cmap = new int[(int) Math.ceil(m_spec.m_ccls_map.length / 1024.0)][1024];
+  int index = 0;
+  int modulo = 0;
+	for (i = 0; i < m_spec.m_ccls_map.length; ++i) {
+      index = (int) Math.floor(i / 1024);
+      modulo = i % 1024;
+	    yy_cmap[index][modulo] = m_spec.m_col_map[m_spec.m_ccls_map[i]];
+  }
 	m_outstream.print("\t\tstatic $yy_cmap = ");
 //	emit_table_as_string(new int[][] { yy_cmap });
-	emit_table_as_array(yy_cmap);
+	emit_table_as_array_2d(yy_cmap);
 //	m_outstream.println(");");
 	m_outstream.println();
 
@@ -1489,7 +1495,7 @@ private void emit_table_as_array_2d(int [][] ia) {
 	  /*m_outstream.println("\t\t\t\tyy_next_state = "
 				 + "yy_next(yy_state,yy_lookahead);");*/
 	  m_outstream.println("\t\t\t$yy_next_state = "
- 	   + "self::$yy_nxt[self::$yy_rmap[$yy_state]][self::$yy_cmap[$yy_lookahead]];");
+ 	   + "self::$yy_nxt[self::$yy_rmap[$yy_state]][self::$yy_cmap[floor($yy_lookahead / self::CMAP_CHUNK_SIZE)][$yy_lookahead % self::CMAP_CHUNK_SIZE]];");
 
 	  if (NOT_EDBG)
 	    {
