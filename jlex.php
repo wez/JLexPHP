@@ -190,16 +190,16 @@ class JLexBase {
   }
 
   /* creates an annotated token */
-  function createToken($type = null) {
+  function createToken($type = null, $value = null) {
     if ($type === null) $type = $this->yytext();
     $tok = new JLexToken($type);
-    $this->annotateToken($tok);
+    $this->annotateToken($tok, $value);
     return $tok;
   }
 
   /* annotates a token with a value and source positioning */
-  function annotateToken(JLexToken $tok) {
-    $tok->value = $this->yytext();
+  function annotateToken(JLexToken $tok, $value = null) {
+    $tok->value = is_null($value) ? $this->yytext() : $value;
     $tok->col = $this->yycol;
     $tok->line = $this->yyline;
     $tok->filename = $this->yyfilename;
